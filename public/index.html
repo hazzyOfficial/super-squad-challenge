@@ -7,9 +7,140 @@
   </head>
   <body>
     <!-- insert something  inside action -->
-    <form id="superheros" method="POST" action="">
+    <!-- submit new info -->
+    <form id="superheros" method="POST" action="/submit-form">
       <label for="hero">Add hero</label>
-      <input type="text" name="hero" id="hero" />
+      <input type="text" name="hero" id="hero" required /> <br /><br />
+
+      <label for="powers">Give powers</label>
+      <input type="text" name="powers" id="powers" required /> <br /><br />
+      <label for="universe">What universe?</label>
+      <textarea
+        id="universe"
+        name="universe"
+        rows="4"
+        cols="50"
+        required
+      ></textarea
+      ><br /><br />
+      <input type="submit" value="Submit" />
     </form>
+    <!--Update users / new info  -->
+    <form id="update-form">
+      <label for="currentHero">Current Hero:</label>
+      <input type="text" id="currentHero" required /><br /><br />
+      <label for="currentPower">Current Power:</label>
+      <input type="currentPower" id="currentPower" required /><br /><br />
+      <label for="newHero">New hero:</label>
+      <input type="text" id="newHero" required /><br /><br />
+      <label for="newPower">new Power:</label>
+      <input type="email" id="newPower" required /><br /><br />
+      <button type="submit">Update User</button>
+    </form>
+    <!-- delete users, and show users -->
+
+    <form id="delete-hero">
+      <label for="delete-hero">name</label>
+      <input type="text" id="delete-hero" />
+
+      <label for="delete-power">email</label>
+      <input type="text" id="delete-power" />
+
+      <button type="submit">Delete user</button>
+    </form>
+    <table id="usersTable">
+      <thead>
+        <tr>
+          <th>User Name</th>
+          <th>User Email</th>
+        </tr>
+      </thead>
+      <tbody id="userTableBody">
+        <!-- data of users will be rendered here -->
+      </tbody>
+    </table>
+
+    <script>
+      document
+        .getElementById("update-Form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const currentName = document.getElementById("currentName").value;
+          const currentEmail = document.getElementById("currentEmail").value;
+          const newName = document.getElementById("newName").value;
+          const newEmail = document.getElementById("newEmail").value;
+          try {
+            const response = await fetch(
+              `/update-user/${currentName}/${currentEmail}`,
+              {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ newName, newEmail }),
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+            renderUsers();
+            // alert("Message is: " + data.message);
+          } catch (error) {
+            alert("Error updating user: " + error.message);
+          }
+        });
+
+      document
+        .getElementById("delete-hero")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("delete-hero").value;
+          const email = document.getElementById("delete-power").value;
+          try {
+            const response = await fetch(`/user/${hero}/${power}`, {
+              method: "DELETE",
+            });
+            if (!response.ok) {
+              throw new Error("Error with Network");
+            }
+            const data = await response.text();
+            console.log(data);
+            renderUsers();
+          } catch (error) {
+            console.error("something went wrong" + error.message);
+          }
+        });
+
+      async function fetchUsers() {
+        try {
+          const response = await fetch("/superheroes");
+          if (!response.ok) {
+            throw new Error("Error fetching users. Response not ok");
+          }
+          // there could be an error getting response/fetching the endpoint
+          console.log(response);
+          const users = await response.json();
+          // there could be an error parsing the response
+          // console.log(users);
+          return users;
+        } catch (error) {
+          console.error("There was a problem");
+          console.error(error);
+        }
+      }
+
+      async function renderUsers() {
+        const tableBody = document.getElementById("userTableBody");
+        tableBody.innerHTML = "";
+        try {
+          const users = await fetchUsers();
+          if (Array.isArray(users) && users.length > 0) {
+            users.forEach((user) => {
+              const row = `<tr><td>${user.name}</td><td>${user.email}</td></tr>`;
+              tableBody.innerHTML += row;
+            });
+          }
+        } catch (error) {}
+      }
+    </script>
   </body>
 </html>
